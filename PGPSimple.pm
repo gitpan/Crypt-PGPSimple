@@ -13,12 +13,19 @@
 package Crypt::PGPSimple;
 require 5.000;
 
-$Crypt::PGPSimple::VERSION = "0.12";
+$Crypt::PGPSimple::VERSION = "0.13";
 $Crypt::PGPSimple::ID = "Crypt::PGPSimple.pm";
 
 =head1 NAME
 
-Crypt::PGPSimple
+Crypt::PGPSimple - Interface to PGP for Windows and UNIX.  No other mods required.
+
+=head1 DESCRIPTION
+
+Object oriented interface to PGP.  Requires PGP installed on the server.
+Allows Perl scripts to encrypt, decrypt and sign messages using PGP
+for the encyption.  Tested with PGP 2.6.2 and PGP 6.5.8 on UNIX and 
+Windows.
 
 =head1 SYNOPSIS
 
@@ -43,6 +50,7 @@ Crypt::PGPSimple
 	$objPGP->Password("mypassword");
 	$objPGP->EncryptedText($encrypted_message);
 	$objPGP->Decrypt;
+	my ($plain_text_message) = $objPGP->PlainText;
 	
 	# Example 3: EncryptSign
 	$objPGP->PublicKey("myfriend\@herhost.com");
@@ -59,24 +67,58 @@ Crypt::PGPSimple
 	$objPGP->Sign;
 	my ($signed_message) = $objPGP->SignedText;
 	
-	# Encrypt, Decrypt, etc. will return 1 for success, 0 for fail.  You
-	# can check the PGP results using $objPGP->Result.  If there was an error
-	# then you can check $objPGP->ErrDescription for details.
-	
-=head1 DESCRIPTION
-
-Object oriented interface to PGP.  Requires PGP installed on the server.
-Allows Perl scripts to encrypt, decrypt and sign messages using PGP
-for the encyption.  Tested with PGP 2.6.2 and PGP 6.5.8 on UNIX and 
-Windows.
-
 =head1 USAGE
 
 See http://www.verysimple.com/scripts/ for more information.
 
+=head1 PROPERTIES
+
+Calling a property with no arguments will return the current value.
+Calling a property with an argument will change the current value to
+the value of the argument supplied and return true (1).
+
+	EncryptedText
+	ErrDescription
+	Password
+	PgpExePath
+	PgpKeyPath
+	PgpTempDir
+	PgpTimeZone
+	PgpVersion
+	PlainText
+	PrivateKey
+	PublicKey
+	Result
+	SignedText
+	Version
+
+=head1 METHODS
+
+The PGP-related methods (encrypting, decrypting, etc) will return true (1) if
+they succeeded or false (0) if not.  The PGP result message is available
+in the Result property.  If an error occured, ErrDescription may contain
+details.
+
+	Decrypt
+	DoPgpCommand($strPgpCommand, $strArguments)
+	Encrypt
+	EncryptSign
+	ErrClear
+	Reset
+	Sign
+	new
+
 =head1 VERSION HISTORY
 
+	0.13 (11/04/00) Updated documentation only.
+	0.12 (11/03/01) Fixed bug w/ multiple recieients (Thanks Ken Hoover) 
 	0.11 (01/09/00) Original Release
+
+=head1 BUGS & KNOWN ISSUES
+
+This module may not work properly with PGP 5.x.  Version 5 used a slightly
+different command-line syntax which was apparently dropped for version 6.  
+There are no current plans to test or modify this module for use with PGP 5.
 
 =head1 AUTHOR
 
@@ -84,7 +126,7 @@ Jason M. Hinkle
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 Jason M. Hinkle.  All rights reserved.
+Copyright (c) 2001 Jason M. Hinkle.  All rights reserved.
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
@@ -217,8 +259,8 @@ sub Encrypt {
 	
 	# generate the command line
 	my ($pgp_command) =  $this->{'strPgpExePath'} 
-		. " -feat +batchmode +force" 
-		. " " . $this->{'strPublicKey'};
+		. " -feat +batchmode +force " 
+		. $this->{'strPublicKey'};
 	
 	$this->{'strEncryptedText'} = $this->DoPgpCommand($pgp_command,$this->{'strPlainText'});
 	
@@ -259,8 +301,8 @@ sub EncryptSign {
 	
 	# generate the command line
 	my ($pgp_command) =  $this->{'strPgpExePath'} 
-		. " -feast +batchmode +force"
-		. " " . $this->{'strPublicKey'} 
+		. " -feast +batchmode +force "
+		. $this->{'strPublicKey'} 
 		. " -u " . $this->{'strPrivateKey'};
 	
 	$this->{'strEncryptedText'} = $this->DoPgpCommand($pgp_command,$this->{'strPlainText'});
@@ -281,8 +323,8 @@ sub Sign {
 	
 	# generate the command line
 	my ($pgp_command) =  $this->{'strPgpExePath'} 
-		. " -fts +batchmode +force"
-		. " -u " . $this->{'strPrivateKey'};
+		. " -fts +batchmode +force -u "
+		. $this->{'strPrivateKey'};
 	
 	$this->{'strSignedText'} = $this->DoPgpCommand($pgp_command,$this->{'strPlainText'});
 	
