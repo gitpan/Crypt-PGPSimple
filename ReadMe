@@ -1,0 +1,8 @@
+Crypt::PGPSimple ReadMe File
+
+To install the module, simply create a directory in your Perl library
+path called Crypt and copy PGPSimple.pm to this directory.  Sorry
+there's no installer, but I don't know how to make them at this point!
+Please feel free to contribute.  Contact jason@verysimple.com
+
+POD Documentation is embedded in the module.
