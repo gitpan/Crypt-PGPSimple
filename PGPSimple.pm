@@ -13,7 +13,7 @@
 package Crypt::PGPSimple;
 require 5.000;
 
-$Crypt::PGPSimple::VERSION = "0.11";
+$Crypt::PGPSimple::VERSION = "0.12";
 $Crypt::PGPSimple::ID = "Crypt::PGPSimple.pm";
 
 =head1 NAME
@@ -218,7 +218,7 @@ sub Encrypt {
 	# generate the command line
 	my ($pgp_command) =  $this->{'strPgpExePath'} 
 		. " -feat +batchmode +force" 
-		. " \"" . $this->{'strPublicKey'} . "\"";
+		. " " . $this->{'strPublicKey'};
 	
 	$this->{'strEncryptedText'} = $this->DoPgpCommand($pgp_command,$this->{'strPlainText'});
 	
@@ -260,8 +260,8 @@ sub EncryptSign {
 	# generate the command line
 	my ($pgp_command) =  $this->{'strPgpExePath'} 
 		. " -feast +batchmode +force"
-		. " \"" . $this->{'strPublicKey'} . "\"" 
-		. " -u \"" . $this->{'strPrivateKey'} . "\"";
+		. " " . $this->{'strPublicKey'} 
+		. " -u " . $this->{'strPrivateKey'};
 	
 	$this->{'strEncryptedText'} = $this->DoPgpCommand($pgp_command,$this->{'strPlainText'});
 	
@@ -282,7 +282,7 @@ sub Sign {
 	# generate the command line
 	my ($pgp_command) =  $this->{'strPgpExePath'} 
 		. " -fts +batchmode +force"
-		. " -u \"" . $this->{'strPrivateKey'} . "\"";
+		. " -u " . $this->{'strPrivateKey'};
 	
 	$this->{'strSignedText'} = $this->DoPgpCommand($pgp_command,$this->{'strPlainText'});
 	
@@ -362,6 +362,10 @@ sub DoPgpCommand {
 	close (STDERR);
 	open (STDOUT, ">&OLDOUT");
 	open (STDERR, ">&OLDERR");
+
+	# close these just to avoid Perl warnings
+	close (OLDOUT);
+	close (OLDERR);
 
 	# open the encrypted file
 	open (ENCRYPTED, "$encrypted_file_path");
